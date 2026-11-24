@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from apify import Actor, Event
 
 from my_actor.errores import EntradaInvalida, ModeloInvalido

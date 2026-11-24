@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import hashlib
 import pickle
 from collections.abc import Mapping, Sequence

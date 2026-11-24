@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections.abc import Mapping, Sequence
 
 from my_actor.esquema import AGLOMERADO_POR_CODIGO, CLASES_DE_INGRESO, INGRESO_MINIMO, LIMITES_DE_INGRESO
