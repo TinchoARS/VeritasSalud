@@ -1,38 +1,43 @@
 ## ¿Qué hace ObraSocialApp?
 
-**ObraSocialApp** estima la **clase de ingreso mensual** de una persona joven que trabaja (de **18 a 30 años**) a partir de las **10 respuestas de un formulario**. Usa un modelo de machine learning entrenado con la [Encuesta Permanente de Hogares (EPH) del INDEC](https://www.indec.gob.ar/indec/web/Institucional-Indec-BasesDeDatos) y devuelve, para cada respuesta:
+**ObraSocialApp** estima **el perfil de cliente** de una persona joven que trabaja (de **18 a 30 años**) a partir de las **10 respuestas de un formulario**. Usa un modelo de machine learning entrenado con la [Encuesta Permanente de Hogares (EPH) del INDEC](https://www.indec.gob.ar/indec/web/Institucional-Indec-BasesDeDatos) y devuelve, para cada respuesta:
 
-- la **clase de ingreso** (1, 2 o 3) con su **tramo en pesos**;
-- la **ciudad** (aglomerado EPH) y la **región** de la persona;
-- si el formulario no se pudo procesar, **qué campos están mal y por qué**.
+* la **clase de ingreso** (1, 2 o 3) con su **tramo en pesos**;
 
-| Clase | Ingreso mensual de la ocupación principal |
-|---|---|
-| 1 | menos de $600.000 |
-| 2 | de $600.000 a $1.200.000 |
-| 3 | más de $1.200.000 |
+|Clase|Ingreso mensual de la ocupación principal|
+|-|-|
+|1|menos de $600.000|
+|2|de $600.000 a $1.200.000|
+|3|más de $1.200.000|
 
-El Actor **no hace scraping ni descarga nada**: recibe las respuestas como JSON (por ejemplo desde **Make**), las prepara y ejecuta el modelo. Tampoco guarda las respuestas.
+* la **ciudad** (aglomerado EPH) y la **región** de la persona en base a su aglomerado;
+* El **Perfil de gasto del cliente** (tercil o quintil de precios correspondiente al cliente);
+
+
+
+
+
+El Actor **no hace scraping ni descarga nada**: recibe las respuestas como JSON (desde **Make**), las prepara y ejecuta el modelo. Tampoco guarda las respuestas.
 
 ## ¿Para qué sirve?
 
-- **Clasificar automáticamente las respuestas de un Google Form**: Make lee las respuestas, llama al Actor y guarda el resultado en Drive, una planilla o un mail.
-- **Ubicar a cada persona por ciudad y región**, para cruzar su clase de ingreso con la oferta de planes de salud disponible en su ciudad.
-- **Validar el formulario**: cada respuesta mal cargada vuelve con la lista de campos a corregir, sin frenar al resto.
-- **Aprovechar la plataforma Apify**: API para llamarlo desde cualquier sistema, integración nativa con Make, historial de ejecuciones y ejecución programada.
+* **Clasificar automáticamente las respuestas de un Google Form**: Make lee las respuestas, llama al Actor y guarda el resultado en Drive, un Google sheets.
+* **Ubicar a cada persona por ciudad y región**, para cruzar su clase de ingreso con la oferta de planes de salud disponible en su ciudad.
+* **Validar el formulario**: cada respuesta mal cargada vuelve con la lista de campos a corregir, sin frenar al resto.
+* **Aprovechar la plataforma Apify**: API para llamarlo desde cualquier sistema, integración nativa con Make, historial de ejecuciones y ejecución programada.
 
 ## ¿Qué datos devuelve?
 
-| Campo | Tipo | Descripción |
-|---|---|---|
-| `id_respuesta` | texto | El identificador que mandaste con el formulario (por ejemplo, el número de fila) |
-| `estado` | texto | `ok` si se pudo predecir, `invalido` si alguna respuesta no sirve |
-| `clase_ingreso` | número | 1, 2 o 3 (vacío si es inválido) |
-| `ingreso_desde` / `ingreso_hasta` | número | Tramo en pesos de la clase. La clase 3 no tiene techo (`ingreso_hasta` vacío) |
-| `aglomerado` / `aglomerado_nombre` | número / texto | Código EPH y nombre de la ciudad |
-| `region` | texto | Región EPH: GBA, Pampeana, NOA, NEA, Cuyo o Patagonia |
-| `errores` | lista | Campos con problemas y el motivo, sin repetir lo que respondió la persona |
-| `version_modelo` | texto | Identificador del modelo que hizo la predicción |
+|Campo|Tipo|Descripción|
+|-|-|-|
+|`id_respuesta`|texto|El identificador que mandaste con el formulario (por ejemplo, el número de fila)|
+|`estado`|texto|`ok` si se pudo predecir, `invalido` si alguna respuesta no sirve|
+|`clase_ingreso`|número|1, 2 o 3 (vacío si es inválido)|
+|`ingreso_desde` / `ingreso_hasta`|número|Tramo en pesos de la clase. La clase 3 no tiene techo (`ingreso_hasta` vacío)|
+|`aglomerado` / `aglomerado_nombre`|número / texto|Código EPH y nombre de la ciudad|
+|`region`|texto|Región EPH: GBA, Pampeana, NOA, NEA, Cuyo o Patagonia|
+|`errores`|lista|Campos con problemas y el motivo, sin repetir lo que respondió la persona|
+|`version_modelo`|texto|Identificador del modelo que hizo la predicción|
 
 ## Cómo usar ObraSocialApp desde Make
 
@@ -44,7 +49,7 @@ El Actor **no hace scraping ni descarga nada**: recibe las respuestas como JSON 
 
 Para probarlo sin Make, abrí la pestaña **Input** en la consola de Apify: ya trae un formulario de ejemplo cargado. Tocá **Start** y mirá el resultado en la pestaña **Output**.
 
-### Ejemplo: app de AppSheet + Make
+### Ejemplo: app de AppSheet + Make (Caso VeritasSalud2)
 
 Así lo usa la app de AppSheet **VeritasSalud**. Las personas cargan sus datos en la app y la app los guarda en la planilla de Google Sheets `Clientes`. Un escenario de Make corre cada 15 minutos y hace esto:
 
@@ -54,43 +59,44 @@ Así lo usa la app de AppSheet **VeritasSalud**. Las personas cargan sus datos e
 2. **Pasa las respuestas de la app al formato del Actor.** Por ejemplo, Masculino → 1, Gran Rosario → 4 e inquilino TRUE → 1. Junta todos los clientes pendientes en un solo input y usa el número de fila como `id_respuesta`.
 3. **Ejecuta el Actor una sola vez** con todos los pendientes. Si no hay clientes nuevos, termina sin llamar a Apify.
 4. **Escribe el resultado en la fila de cada cliente:**
-   - `Tier` = la clase de ingreso (1, 2 o 3). Si la respuesta fue inválida, escribe `Revisar datos: <campos>`.
-   - `Procesado` = TRUE, para que esa fila no se vuelva a procesar.
+
+   * `Tier` = la clase de ingreso (1, 2 o 3). Si la respuesta fue inválida, escribe `Revisar datos: <campos>`.
+   * `Procesado` = TRUE, para que esa fila no se vuelva a procesar.
 
 La app lee el `Tier` directamente de la planilla. Si un cliente cambia sus datos después de procesado, la fila no se recalcula sola: hay que volver a poner `Procesado` en FALSE.
 
 ## ¿Cuánto cuesta usar ObraSocialApp?
 
-Se paga solo el consumo de la plataforma (unidades de cómputo). Una ejecución con 4 formularios tardó **7 segundos** y consumió **0,002 unidades de cómputo** con 1 GB de memoria: menos de un centavo de dólar. El plan gratuito de Apify incluye créditos mensuales que alcanzan para miles de ejecuciones como esa.
+Se paga solo el consumo de la plataforma (unidades de cómputo). Una ejecución con 4 formularios tardó **7 segundos** y consumió **0,004 unidades de cómputo** con 1 GB de memoria: menos de un centavo de dólar. El plan gratuito de Apify incluye créditos mensuales que alcanzan para miles de ejecuciones como esa.
 
-Casi todo ese tiempo es el arranque y la carga del modelo. Procesar 1 o 1000 formularios en la misma ejecución cuesta prácticamente lo mismo.
+Casi todo ese tiempo es el arranque y la carga del modelo. Procesar 1 o 1000 formularios en la misma ejecución cuesta prácticamente lo mismo. Por ese motivo, se recomienda un batch processing en intervalos cortos, un webhook generaría un costo de operación más alto
 
 ## Input
 
 Mirá la pestaña **Input** para ver el formato completo. El input tiene un solo campo, `formularios`: una lista de hasta **1000** respuestas, cada una con:
 
-- `id_respuesta`: texto o número que identifica la respuesta. Usá algo que no sea un dato personal (por ejemplo, el número de fila, no el mail).
-- `respuestas`: un objeto pregunta → respuesta. Make a veces lo manda como texto JSON; también se acepta así.
+* `id_respuesta`: texto o número que identifica la respuesta. Usá algo que no sea un dato personal (por ejemplo, el número de fila, no el mail).
+* `respuestas`: un objeto pregunta → respuesta. Make a veces lo manda como texto JSON; también se acepta así.
 
 ### Las 10 preguntas del formulario
 
 Todas son **obligatorias**.
 
-| # | Pregunta (o clave interna) | Respuestas aceptadas |
-|---|---|---|
-| 1 | Cobertura de salud (`cobertura_salud`) | Obra social (o PAMI), Prepaga (o Mutual), Sin cobertura (o Ninguna, No tengo) |
-| 2 | Edad (`edad`) | Número entero de 18 a 30 |
-| 3 | Nivel educativo (`nivel_educativo`) | Sin instrucción, Primario incompleto, Primario completo, Secundario incompleto, Secundario completo, Universitario incompleto, Universitario completo (terciario también vale), o el código EPH 1–7 |
-| 4 | ¿Tu empleo está registrado? (`formalidad_empleo`) | Sí / No (también Registrado / No registrado, En blanco / En negro, Formal / Informal) |
-| 5 | Sexo (`sexo`) | Varón / Mujer |
-| 6 | ¿Cuántas personas trabajan junto a usted en su ocupación principal? (`tamano_establecimiento`) | Hasta 5, De 6 a 40, Más de 40 |
-| 7 | ¿Cuántas horas trabajaste la semana pasada en tu ocupación principal? (`horas_trabajo`) | Número de 1 a 168 (se aceptan decimales con coma o punto) |
-| 8 | ¿Qué calificación tiene tu ocupación? (`calificacion_ocupacion`) | Profesional, Técnica, Operativa, No calificada |
-| 9 | Ciudad (`aglomerado`) | Una de las [32 ciudades de la EPH](#ciudades-aceptadas), por nombre o código |
-| 10 | ¿Alquilás la vivienda donde vivís? (`inquilino`) | Sí / No |
+|#|Pregunta (o clave interna)|Respuestas aceptadas|
+|-|-|-|
+|1|Cobertura de salud (`cobertura_salud`)|Obra social (o PAMI), Prepaga (o Mutual), Sin cobertura (o Ninguna, No tengo)|
+|2|Edad (`edad`)|Número entero de 18 a 30|
+|3|Nivel educativo (`nivel_educativo`)|Sin instrucción, Primario incompleto, Primario completo, Secundario incompleto, Secundario completo, Universitario incompleto, Universitario completo (terciario también vale), o el código EPH 1–7|
+|4|¿Tu empleo está registrado? (`formalidad_empleo`)|Sí / No (también Registrado / No registrado, En blanco / En negro, Formal / Informal)|
+|5|Sexo (`sexo`)|Varón / Mujer|
+|6|¿Cuántas personas trabajan junto a usted en su ocupación principal? (`tamano_establecimiento`)|Hasta 5, De 6 a 40, Más de 40|
+|7|¿Cuántas horas trabajaste la semana pasada en tu ocupación principal? (`horas_trabajo`)|Número de 1 a 168 (se aceptan decimales con coma o punto)|
+|8|¿Qué calificación tiene tu ocupación? (`calificacion_ocupacion`)|Profesional, Técnica, Operativa, No calificada|
+|9|Ciudad (`aglomerado`)|Una de las [32 ciudades de la EPH](#ciudades-aceptadas), por nombre o código|
+|10|¿Alquilás la vivienda donde vivís? (`inquilino`)|Sí / No|
 
-- Las preguntas se reconocen por su texto o por la clave interna, sin importar mayúsculas, acentos ni signos.
-- Las columnas que no son de estas 10 preguntas (marca temporal, nombre, mail) se ignoran y no se guardan.
+* Las preguntas se reconocen por su texto o por la clave interna, sin importar mayúsculas, acentos ni signos.
+* Las columnas que no son de estas 10 preguntas (marca temporal, nombre, mail) se ignoran y no se guardan.
 
 ### Ejemplo de input
 
@@ -159,24 +165,24 @@ Además, el registro `RESUMEN` del key-value store guarda cuántos formularios f
 
 ## Cómo calcula la clase de ingreso
 
-- El modelo (Gradient Boosting) estima el **ingreso mensual de la ocupación principal** de la persona, no el del hogar.
-- Esa estimación se compara con dos cortes guardados junto al modelo: **$582.267** y **$1.200.000**. El primero está un poco por debajo de $600.000 porque así el modelo distingue mejor la clase 2. El resultado informa igual los tramos nominales de la tabla de arriba.
-- En la evaluación con datos de prueba, el modelo acertó la clase en el **68,9 %** de los casos.
-- Lo que más pesa en la predicción son las horas trabajadas, si el empleo está registrado, la cobertura de salud y la ciudad.
+* El modelo (Gradient Boosting) estima el **ingreso mensual de la ocupación principal** de la persona, no el del hogar.
+* Esa estimación se compara con dos cortes guardados junto al modelo: **$582.267** y **$1.200.000**. El primero está un poco por debajo de $600.000 porque así el modelo distingue mejor la clase 2. El resultado informa igual los tramos nominales de la tabla de arriba.
+* En la evaluación con datos de prueba, el modelo acertó la clase en el **68,9 %** de los casos.
+* Lo que más pesa en la predicción son las horas trabajadas, si el empleo está registrado, la cobertura de salud y la ciudad.
 
 ### Limitaciones
 
-- Sirve solo para **personas de 18 a 30 años que trabajan**. Otras edades se rechazan como inválidas.
-- Los montos en pesos corresponden al **período de la encuesta** y no se ajustan por inflación.
-- La pregunta de **cuántas personas trabajan junto a usted** no cambia el resultado: el modelo la requiere, pero no le da peso.
-- Es una estimación estadística: en aproximadamente 3 de cada 10 casos la clase no coincide con la real.
+* Sirve solo para **personas de 18 a 30 años que trabajan**. Otras edades se rechazan como inválidas.
+* Los montos en pesos corresponden al **período de la encuesta** y no se ajustan por inflación.
+* La pregunta de **cuántas personas trabajan junto a usted** no cambia el resultado: el modelo la requiere, pero no le da peso.
+* Es una estimación estadística: en aproximadamente 3 de cada 10 casos la clase no coincide con la real.
 
 ## Privacidad y datos personales
 
-- El Actor **no guarda las respuestas** del formulario. El dataset lleva solo el identificador, la clase, el tramo, la ciudad y la región.
-- Los errores informan el **nombre del campo** y el motivo, nunca el valor que cargó la persona.
-- Los logs no muestran respuestas.
-- Recomendación: no uses como `id_respuesta` datos que identifiquen a la persona (mail, DNI, nombre).
+* El Actor **no guarda las respuestas** del formulario. El dataset lleva solo el identificador, la clase, el tramo, la ciudad y la región.
+* Los errores informan el **nombre del campo** y el motivo, nunca el valor que cargó la persona.
+* Los logs no muestran respuestas.
+* Recomendación: no uses como `id_respuesta` datos que identifiquen a la persona (mail, DNI, nombre).
 
 ## Preguntas frecuentes
 
@@ -205,8 +211,8 @@ curl -X POST "https://api.apify.com/v2/acts/tinchoars~obrasocialapp/run-sync-get
 
 ### Consejos para gastar menos
 
-- Mandá varias respuestas en una misma ejecución (hasta 1000): el costo casi no cambia.
-- El Actor usa poca memoria (unos 125 MB). Podés bajarla a 512 MB en las opciones de ejecución.
+* Mandá varias respuestas en una misma ejecución (hasta 1000): el costo casi no cambia.
+* El Actor usa poca memoria (unos 125 MB). Podés bajarla a 512 MB en las opciones de ejecución.
 
 ### ¿Dónde reporto un problema?
 
@@ -216,37 +222,60 @@ En la pestaña **Issues** de este Actor.
 
 Se acepta el nombre, cualquiera de los otros nombres de la tabla, el código EPH o la columna del catálogo de planes (por ejemplo `agl_04_gran_rosario`).
 
-| Código | Ciudad | Región | También se acepta |
-|---|---|---|---|
-| 2 | Gran La Plata | Pampeana | La Plata |
-| 3 | Bahía Blanca - Cerri | Pampeana | Bahía Blanca, Cerri |
-| 4 | Gran Rosario | Pampeana | Rosario |
-| 5 | Gran Santa Fe | Pampeana | Santa Fe, Ciudad de Santa Fe |
-| 6 | Gran Paraná | Pampeana | Paraná |
-| 7 | Posadas | NEA | |
-| 8 | Gran Resistencia | NEA | Resistencia |
-| 9 | Comodoro Rivadavia - Rada Tilly | Patagonia | Comodoro Rivadavia, Comodoro, Rada Tilly |
-| 10 | Gran Mendoza | Cuyo | Mendoza |
-| 12 | Corrientes | NEA | |
-| 13 | Gran Córdoba | Pampeana | Córdoba, Ciudad de Córdoba |
-| 14 | Concordia | Pampeana | |
-| 15 | Formosa | NEA | |
-| 17 | Neuquén - Plottier | Patagonia | Neuquén, Plottier |
-| 18 | Santiago del Estero - La Banda | NOA | Santiago del Estero, La Banda |
-| 19 | Jujuy - Palpalá | NOA | Jujuy, San Salvador de Jujuy, Palpalá |
-| 20 | Río Gallegos | Patagonia | |
-| 22 | Gran Catamarca | NOA | Catamarca, San Fernando del Valle de Catamarca |
-| 23 | Gran Salta | NOA | Salta |
-| 25 | La Rioja | NOA | |
-| 26 | Gran San Luis | Cuyo | San Luis |
-| 27 | Gran San Juan | Cuyo | San Juan |
-| 29 | Gran Tucumán - Tafí Viejo | NOA | Tucumán, San Miguel de Tucumán, Tafí Viejo |
-| 30 | Santa Rosa - Toay | Pampeana | Santa Rosa, Toay |
-| 31 | Ushuaia - Río Grande | Patagonia | Ushuaia, Río Grande |
-| 32 | Ciudad Autónoma de Buenos Aires | GBA | CABA, Capital Federal, Ciudad de Buenos Aires |
-| 33 | Partidos del GBA | GBA | GBA, Gran Buenos Aires, Conurbano, Conurbano bonaerense |
-| 34 | Mar del Plata | Pampeana | Mar del Plata - Batán |
-| 36 | Río Cuarto | Pampeana | |
-| 38 | San Nicolás - Villa Constitución | Pampeana | San Nicolás, Villa Constitución |
-| 91 | Rawson - Trelew | Patagonia | Rawson, Trelew |
-| 93 | Viedma - Carmen de Patagones | Patagonia | Viedma, Carmen de Patagones |
+|Código|Ciudad|Región|También se acepta|
+|-|-|-|-|
+|2|Gran La Plata|Pampeana|La Plata|
+|3|Bahía Blanca - Cerri|Pampeana|Bahía Blanca, Cerri|
+|4|Gran Rosario|Pampeana|Rosario|
+|5|Gran Santa Fe|Pampeana|Santa Fe, Ciudad de Santa Fe|
+|6|Gran Paraná|Pampeana|Paraná|
+|7|Posadas|NEA||
+|8|Gran Resistencia|NEA|Resistencia|
+|9|Comodoro Rivadavia - Rada Tilly|Patagonia|Comodoro Rivadavia, Comodoro, Rada Tilly|
+|10|Gran Mendoza|Cuyo|Mendoza|
+|12|Corrientes|NEA||
+|13|Gran Córdoba|Pampeana|Córdoba, Ciudad de Córdoba|
+|14|Concordia|Pampeana||
+|15|Formosa|NEA||
+|17|Neuquén - Plottier|Patagonia|Neuquén, Plottier|
+|18|Santiago del Estero - La Banda|NOA|Santiago del Estero, La Banda|
+|19|Jujuy - Palpalá|NOA|Jujuy, San Salvador de Jujuy, Palpalá|
+|20|Río Gallegos|Patagonia||
+|22|Gran Catamarca|NOA|Catamarca, San Fernando del Valle de Catamarca|
+|23|Gran Salta|NOA|Salta|
+|25|La Rioja|NOA||
+|26|Gran San Luis|Cuyo|San Luis|
+|27|Gran San Juan|Cuyo|San Juan|
+|29|Gran Tucumán - Tafí Viejo|NOA|Tucumán, San Miguel de Tucumán, Tafí Viejo|
+|30|Santa Rosa - Toay|Pampeana|Santa Rosa, Toay|
+|31|Ushuaia - Río Grande|Patagonia|Ushuaia, Río Grande|
+|32|Ciudad Autónoma de Buenos Aires|GBA|CABA, Capital Federal, Ciudad de Buenos Aires|
+|33|Partidos del GBA|GBA|GBA, Gran Buenos Aires, Conurbano, Conurbano bonaerense|
+|34|Mar del Plata|Pampeana|Mar del Plata - Batán|
+|36|Río Cuarto|Pampeana||
+|38|San Nicolás - Villa Constitución|Pampeana|San Nicolás, Villa Constitución|
+|91|Rawson - Trelew|Patagonia|Rawson, Trelew|
+|93|Viedma - Carmen de Patagones|Patagonia|Viedma, Carmen de Patagones|
+
+
+
+
+
+
+
+
+
+## Operación del AppSheet:
+
+
+
+La aplicación celular y web permite reducir la fricción que experimenta el usuario para ser procesado. Esta guarda datos en un Google docs con un ID de identificación del usuario, sus datos de repuesta en el cuestionario y las variables a ser calculadas o editadas por el proceso de Make.
+
+Todo usuario comienza respondiendo un formulario en la pestaña de "Mis Datos" para ser cargado en la base de datos. Cada usuario solo pude ver y editar su fila. El sistema de seguridad solo envía y recibe paquetes relacionados con cada fila individual de cada cliente. Como segunda medida de seguridad, la aplicación enmascara toda otra fila que puede haber sido mostrada. 
+
+
+
+Una vez son procesados por el modelo ML, se le muestran al cliente los planes que coinciden con su región, edad y rango de precios asignado. Un bot se encarga de marcar al cliente como no procesado en caso de que este modifique o actualice su información. 
+
+
+
