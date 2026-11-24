@@ -44,6 +44,21 @@ El Actor **no hace scraping ni descarga nada**: recibe las respuestas como JSON 
 
 Para probarlo sin Make, abrí la pestaña **Input** en la consola de Apify: ya trae un formulario de ejemplo cargado. Tocá **Start** y mirá el resultado en la pestaña **Output**.
 
+### Ejemplo: app de AppSheet + Make
+
+Así lo usa la app de AppSheet **VeritasSalud**. Las personas cargan sus datos en la app y la app los guarda en la planilla de Google Sheets `Clientes`. Un escenario de Make corre cada 15 minutos y hace esto:
+
+[![Escenario de Make: Leer planilla Clientes → ETL: textos a códigos (JSON) → Ejecutar ObraSocialApp → Leer predicciones → Escribir Tier y Procesado](https://raw.githubusercontent.com/TinchoARS/VeritasSalud/main/docs/make-workflow.png)](https://raw.githubusercontent.com/TinchoARS/VeritasSalud/main/docs/make-workflow.png)
+
+1. **Lee la planilla** y se queda solo con los clientes que todavía no tienen `Procesado` = TRUE.
+2. **Pasa las respuestas de la app al formato del Actor.** Por ejemplo, Masculino → 1, Gran Rosario → 4 e inquilino TRUE → 1. Junta todos los clientes pendientes en un solo input y usa el número de fila como `id_respuesta`.
+3. **Ejecuta el Actor una sola vez** con todos los pendientes. Si no hay clientes nuevos, termina sin llamar a Apify.
+4. **Escribe el resultado en la fila de cada cliente:**
+   - `Tier` = la clase de ingreso (1, 2 o 3). Si la respuesta fue inválida, escribe `Revisar datos: <campos>`.
+   - `Procesado` = TRUE, para que esa fila no se vuelva a procesar.
+
+La app lee el `Tier` directamente de la planilla. Si un cliente cambia sus datos después de procesado, la fila no se recalcula sola: hay que volver a poner `Procesado` en FALSE.
+
 ## ¿Cuánto cuesta usar ObraSocialApp?
 
 Se paga solo el consumo de la plataforma (unidades de cómputo). Una ejecución con 4 formularios tardó **7 segundos** y consumió **0,002 unidades de cómputo** con 1 GB de memoria: menos de un centavo de dólar. El plan gratuito de Apify incluye créditos mensuales que alcanzan para miles de ejecuciones como esa.
