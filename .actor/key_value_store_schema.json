@@ -1,0 +1,13 @@
+{
+    "$schema": "https://apify.com/schemas/v1/key-value-store.ide.json",
+    "actorKeyValueStoreSchemaVersion": 1,
+    "title": "Resumen de la ejecución",
+    "collections": {
+        "resumen": {
+            "title": "Resumen",
+            "description": "Totales de formularios válidos e inválidos y versión del modelo usada",
+            "key": "RESUMEN",
+            "contentTypes": ["application/json"]
+        }
+    }
+}

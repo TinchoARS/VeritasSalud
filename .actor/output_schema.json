@@ -1,0 +1,17 @@
+{
+    "$schema": "https://apify.com/schemas/v1/output.ide.json",
+    "actorOutputSchemaVersion": 1,
+    "title": "Resultados de ObraSocialApp",
+    "properties": {
+        "resultados": {
+            "type": "string",
+            "title": "Predicciones por formulario",
+            "template": "{{links.apiDefaultDatasetUrl}}/items"
+        },
+        "resumen": {
+            "type": "string",
+            "title": "Resumen de la ejecución",
+            "template": "{{links.apiDefaultKeyValueStoreUrl}}/records/RESUMEN"
+        }
+    }
+}

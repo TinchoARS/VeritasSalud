@@ -1,0 +1,219 @@
+{
+    "$schema": "https://apify.com/schemas/v1/dataset.ide.json",
+    "actorSpecification": 1,
+    "fields": {
+        "type": "object",
+        "properties": {
+            "id_respuesta": {
+                "type": "string",
+                "description": "Identificador de la respuesta enviado por Make"
+            },
+            "estado": {
+                "type": "string",
+                "enum": [
+                    "ok",
+                    "invalido"
+                ],
+                "description": "ok si se predijo, invalido si el formulario tiene errores"
+            },
+            "clase_ingreso": {
+                "type": [
+                    "integer",
+                    "null"
+                ],
+                "enum": [
+                    1,
+                    2,
+                    3,
+                    null
+                ],
+                "description": "Clase de ingreso de la ocupación principal predicha (1 = menos de $600.000, 2 = $600.000 a $1.200.000, 3 = más de $1.200.000 por mes)"
+            },
+            "ingreso_desde": {
+                "type": [
+                    "integer",
+                    "null"
+                ],
+                "enum": [
+                    0,
+                    600000,
+                    1200000,
+                    null
+                ],
+                "description": "Ingreso mensual mínimo de la clase predicha, en pesos"
+            },
+            "ingreso_hasta": {
+                "type": [
+                    "integer",
+                    "null"
+                ],
+                "enum": [
+                    600000,
+                    1200000,
+                    null
+                ],
+                "description": "Ingreso mensual máximo de la clase predicha, en pesos (null en la clase 3, que no tiene techo)"
+            },
+            "aglomerado": {
+                "type": [
+                    "integer",
+                    "null"
+                ],
+                "enum": [
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    12,
+                    13,
+                    14,
+                    15,
+                    17,
+                    18,
+                    19,
+                    20,
+                    22,
+                    23,
+                    25,
+                    26,
+                    27,
+                    29,
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    36,
+                    38,
+                    91,
+                    93,
+                    null
+                ],
+                "description": "Código EPH del aglomerado (ciudad) que indicó la persona; null si no se pudo leer"
+            },
+            "aglomerado_nombre": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "description": "Nombre del aglomerado"
+            },
+            "region": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "enum": [
+                    "Cuyo",
+                    "GBA",
+                    "NEA",
+                    "NOA",
+                    "Pampeana",
+                    "Patagonia",
+                    null
+                ],
+                "description": "Región EPH del aglomerado"
+            },
+            "errores": {
+                "type": "array",
+                "description": "Campos con error y motivo, sin los valores ingresados",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "campo": {
+                            "type": "string"
+                        },
+                        "motivo": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "version_modelo": {
+                "type": "string",
+                "description": "Versión declarada en el pickle o hash del archivo"
+            }
+        },
+        "required": [
+            "id_respuesta",
+            "estado",
+            "clase_ingreso",
+            "ingreso_desde",
+            "ingreso_hasta",
+            "aglomerado",
+            "aglomerado_nombre",
+            "region",
+            "errores",
+            "version_modelo"
+        ]
+    },
+    "views": {
+        "resultados": {
+            "title": "Resultados",
+            "transformation": {
+                "fields": [
+                    "id_respuesta",
+                    "estado",
+                    "clase_ingreso",
+                    "ingreso_desde",
+                    "ingreso_hasta",
+                    "aglomerado",
+                    "aglomerado_nombre",
+                    "region",
+                    "errores",
+                    "version_modelo"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "id_respuesta": {
+                        "label": "ID respuesta",
+                        "format": "text"
+                    },
+                    "estado": {
+                        "label": "Estado",
+                        "format": "text"
+                    },
+                    "clase_ingreso": {
+                        "label": "Clase de ingreso",
+                        "format": "number"
+                    },
+                    "ingreso_desde": {
+                        "label": "Ingreso desde ($)",
+                        "format": "number"
+                    },
+                    "ingreso_hasta": {
+                        "label": "Ingreso hasta ($)",
+                        "format": "number"
+                    },
+                    "aglomerado": {
+                        "label": "Aglomerado (código)",
+                        "format": "number"
+                    },
+                    "aglomerado_nombre": {
+                        "label": "Aglomerado",
+                        "format": "text"
+                    },
+                    "region": {
+                        "label": "Región",
+                        "format": "text"
+                    },
+                    "errores": {
+                        "label": "Errores",
+                        "format": "object"
+                    },
+                    "version_modelo": {
+                        "label": "Versión del modelo",
+                        "format": "text"
+                    }
+                }
+            }
+        }
+    }
+}

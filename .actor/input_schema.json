@@ -1,0 +1,34 @@
+{
+    "$schema": "https://apify.com/schemas/v1/input.ide.json",
+    "title": "Formularios de ObraSocialApp",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "formularios": {
+            "title": "Formularios",
+            "type": "array",
+            "editor": "json",
+            "description": "Respuestas del formulario enviadas por Make. Cada elemento lleva 'id_respuesta' (texto o número, por ejemplo la fila de la planilla) y 'respuestas' (objeto pregunta → respuesta, o ese objeto como texto JSON). Claves aceptadas: texto de la pregunta o clave interna (cobertura_salud, edad, nivel_educativo, formalidad_empleo, sexo, tamano_establecimiento, horas_trabajo, calificacion_ocupacion, aglomerado, inquilino). Todas son obligatorias. Las respuestas pueden ser la etiqueta ('Secundario completo', 'Obra social', 'Sí') o el código EPH (4). edad va de 18 a 30 (la franja con la que se entrenó el modelo). sexo: Varón o Mujer. tamano_establecimiento: ¿cuántas personas trabajan junto a vos en tu ocupación principal? (Hasta 5, De 6 a 40, Más de 40). horas_trabajo: horas trabajadas la semana pasada en la ocupación principal (1 a 168). calificacion_ocupacion: Profesional, Técnica, Operativa o No calificada. inquilino: ¿alquilás la vivienda donde vivís? (Sí/No). aglomerado es la ciudad: nombre ('Gran Rosario', 'Rosario', 'CABA'), columna del catálogo de planes ('agl_04_gran_rosario') o código EPH (4).",
+            "prefill": [
+                {
+                    "id_respuesta": "fila-2",
+                    "respuestas": {
+                        "Cobertura de salud": "Obra social",
+                        "Edad": "27",
+                        "Nivel educativo": "Universitario completo",
+                        "¿Tu empleo está registrado?": "Sí",
+                        "Sexo": "Mujer",
+                        "¿Cuántas personas trabajan junto a usted en su ocupación principal?": "De 6 a 40",
+                        "¿Cuántas horas trabajaste la semana pasada en tu ocupación principal?": "40",
+                        "¿Qué calificación tiene tu ocupación?": "Técnica",
+                        "Ciudad": "Gran Rosario",
+                        "¿Alquilás la vivienda donde vivís?": "Sí"
+                    }
+                }
+            ]
+        }
+    },
+    "required": [
+        "formularios"
+    ]
+}
