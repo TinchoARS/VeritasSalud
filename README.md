@@ -48,7 +48,7 @@ Para probarlo sin Make, abrí la pestaña **Input** en la consola de Apify: ya t
 
 Así lo usa la app de AppSheet **VeritasSalud**. Las personas cargan sus datos en la app y la app los guarda en la planilla de Google Sheets `Clientes`. Un escenario de Make corre cada 15 minutos y hace esto:
 
-[![Escenario de Make: Leer planilla Clientes → ETL: textos a códigos (JSON) → Ejecutar ObraSocialApp → Leer predicciones → Escribir Tier y Procesado](https://raw.githubusercontent.com/TinchoARS/VeritasSalud/main/docs/make-workflow.png)](https://raw.githubusercontent.com/TinchoARS/VeritasSalud/main/docs/make-workflow.png)
+![Escenario de Make: Leer planilla Clientes → ETL: textos a códigos (JSON) → Ejecutar ObraSocialApp → Leer predicciones → Escribir Tier y Procesado](docs/make-workflow.png)
 
 1. **Lee la planilla** y se queda solo con los clientes que todavía no tienen `Procesado` = TRUE.
 2. **Pasa las respuestas de la app al formato del Actor.** Por ejemplo, Masculino → 1, Gran Rosario → 4 e inquilino TRUE → 1. Junta todos los clientes pendientes en un solo input y usa el número de fila como `id_respuesta`.
